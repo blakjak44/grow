@@ -1,17 +1,17 @@
 <template>
-  <div id="login" class="uk-flex uk-flex-center uk-flex-middle uk-flex-column uk-height-viewport uk-light uk-position-relative uk-position-z-index">
-    <h1 class="uk-heading">Login</h1>
+  <div id='provision' class="uk-flex uk-flex-center uk-flex-middle uk-flex-column uk-height-viewport uk-light uk-position-relative uk-position-z-index">
+    <h1 class="uk-heading">Provision Device</h1>
     <div class="uk-width-medium uk-padding-small">
       <form v-on:submit.prevent="onSubmit()">
         <fieldset class="uk-fieldset">
           <div class="uk-margin">
             <div class="uk-inline uk-width-1-1">
-              <span class="uk-form-icon uk-form-icon-flip" uk-icon="icon: user"></span>
+              <span class="uk-form-icon uk-form-icon-flip" uk-icon="icon: link"></span>
               <input
                 class="uk-input uk-border-rounded"
                 type="text"
-                v-model="username"
-                placeholder="Username"
+                v-model="ssid"
+                placeholder="SSID"
               />
             </div>
           </div>
@@ -23,6 +23,7 @@
                 type="password"
                 v-model="password"
                 placeholder="Password"
+                autocomplete="new-password"
               />
             </div>
           </div>
@@ -32,7 +33,7 @@
         </fieldset>
       </form>
       <div class="uk-flex uk-flex-center uk-flex-middle">
-        <p>Need an account?  <router-link to="/auth/register">Register</router-link></p>
+        <p>Please enter wifi network credentials.</p>
       </div>
     </div>
   </div>
@@ -42,30 +43,44 @@
 <script>
 import UIkit from 'uikit';
 
-import { LOGIN } from "../store/actions.type";
+import { ADD_WIFI, SET_WIFI, REBOOT } from "../store/actions.type";
 
 export default {
-  name: "login",
+  name: "provision",
   data() {
     return {
-      username: '',
+      ssid: '',
       password: ''
     };
   },
   methods: {
     onSubmit() {
-      let username = this.username;
+      let ssid = this.ssid;
       let password = this.password;
-      this.$store.dispatch(LOGIN, { username, password })
+      this.$store.dispatch(ADD_WIFI, { ssid, password })
         .then( data => {
-          this.$router.push({ path: `/dashboard/${data.user.user_id}` })
+          UIkit.notification(data.message, { status:'success' })
+          this.$store.dispatch(SET_WIFI).then( data => {
+            UIkit.notification(data.message, { status:'success' });
+            UIkit.notification(
+              'Device will now reboot. Please connect to the new WiFi network.',
+              { status:'success' }
+            );
+            this.$store.dispatch(REBOOT)
+          })
         })
         .catch( response => {
           response.data.errors.forEach( error => {
-            UIkit.notification(error, {status:'danger'})
+            UIkit.notification(error, { status:'danger' })
           })
         })
     }
   }
 };
 </script>
+
+<style scoped>
+#provision {
+  background-color: #2A2A2A;
+}
+</style>

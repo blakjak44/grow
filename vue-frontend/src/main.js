@@ -10,14 +10,11 @@ Vue.config.productionTip = false
 
 ApiService.init();
 
-const noAuthRoutes = ['auth', 'login', 'register']
-
 // Ensure we checked auth before each page load.
 router.beforeEach((to, from, next) => {
-  if (noAuthRoutes.indexOf(to.name) > -1) {
+  if (to.meta.noAuth) {
     next()
   } else {
-  //Promise.all([store.dispatch(CHECK_AUTH)]).then(next)
     store.dispatch( CHECK_AUTH )
     .then(next)
     .catch( () => { router.push({ name: 'home' }) })

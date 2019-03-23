@@ -1,6 +1,6 @@
 from mongoengine import *
 
-class WifiNetwork(Document):
+class WifiNetworks(Document):
     ssid = StringField(required=True)
     password = StringField(required=True)
 

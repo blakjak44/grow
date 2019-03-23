@@ -14,17 +14,20 @@ export default new Router({
       path: "/auth",
       name: 'auth',
       component: () => import("../views/Auth"),
+      meta: { noAuth: true },
       redirect: { name: 'login' },
       children: [
         {
           path: "login",
           name: 'login',
           component: () => import("../views/Login"),
+          meta: { noAuth: true }
         },
         {
           path: "register",
           name: 'register',
           component: () => import("../views/Register"),
+          meta: { noAuth: true }
         }
       ]
     },
@@ -33,6 +36,11 @@ export default new Router({
       name: 'dashboard',
       component: () => import("../views/Dashboard"),
       children: [
+        {
+          path: "/provision",
+          name: 'provision',
+          component: () => import("../views/Provision"),
+        },
       ]
     }
   ]

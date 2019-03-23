@@ -4,6 +4,7 @@ import json
 from flask import (
     Blueprint, g, request, session, jsonify
 )
+
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from mongoengine.errors import ValidationError
@@ -48,7 +49,7 @@ def register():
 
 @bp.route('/login', methods=['POST'])
 def login():
-    username = request.get_json()['credentials']['username']
+    username = request.get_json()['credentials']['username'].lower()
     password = request.get_json()['credentials']['password']
     errors = []
 
@@ -82,7 +83,6 @@ def validate():
         return jsonify(success=False, errors=errors), 401
     message = 'Authenticated.'
     return jsonify(success=True, message=message, user={'user_id': str(user.id), 'username': user.username}), 200
-
 
 @bp.before_app_request
 def load_logged_in_user():

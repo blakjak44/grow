@@ -12,7 +12,6 @@ from werkzeug.security import generate_password_hash
 
 from .auth import auth, load_logged_in_user
 from .provision import prov
-from .raspi import raspi
 
 from mongoengine import *
 from .models import *
@@ -35,7 +34,6 @@ if __name__ == '__main__':
 
     app.add_subapp('/api/auth', auth)
     app.add_subapp('/api/prov', prov)
-    app.add_subapp('/api/raspi', raspi)
 
     #sio.attach(app)
 

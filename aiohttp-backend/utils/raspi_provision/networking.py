@@ -1,12 +1,14 @@
+import re
+
 import subprocess
 import os
-import re
 
 """
 Simple module for controlling wifi and access point mode on raspberru pi.
 MUST be run as root.
 Does NOT do error handling.
 """
+
 
 RASPI_PROV_PATH = os.environ.get('RASPI_PROV')
 if not RASPI_PROV_PATH:
@@ -44,9 +46,11 @@ def switch_AP_mode(active=True):
         result = subprocess.check_output(['cp', f'{RASPI_PROV_PATH}/config_files/dhcpcd.conf.enable', '/etc/dhcpcd.conf'])
         result = subprocess.check_output(['/bin/systemctl', 'enable', 'hostapd'])
         result = subprocess.check_output(['/bin/systemctl', 'start', 'hostapd'])
-        subprocess.check_output(['reboot'])
     else:
         result = subprocess.check_output(['cp', f'{RASPI_PROV_PATH}/config_files/dhcpcd.conf.disable', '/etc/dhcpcd.conf'])
         result = subprocess.check_output(['/bin/systemctl', 'stop', 'hostapd'])
         result = subprocess.check_output(['/bin/systemctl', 'disable', 'hostapd'])
-        subprocess.check_output(['reboot'])
+
+def reboot():
+    subprocess.check_output(['reboot'])
+

@@ -3,6 +3,7 @@ from mongoengine import *
 class WifiNetworks(Document):
     ssid = StringField(required=True)
     password = StringField(required=True)
+    active = BooleanField(default=False)
 
 class Users(Document):
     username = StringField(required=True)

@@ -1,13 +1,20 @@
 from aiohttp import web
 
-from werkzeug.security import generate_password_hash
+from threading import Timer
 
 from .models import *
+from .utils.raspi_provision import networking
+
+from .auth import login_required
 
 routes = web.RouteTableDef()
 
+@login_required
 @routes.post('/add')
 async def add(request):
+    """
+    Adds a new WiFi configuration to database. Needs to be set to active to use.
+    """
     user = request['user']
     body = await request.json()
     ssid = body['credentials']['ssid']
@@ -24,7 +31,7 @@ async def add(request):
     if not len(errors):
         wifi_network = WifiNetworks(
                 ssid=ssid,
-                password=generate_password_hash(password),
+                password=password,
                 )
         try:
             wifi_network.save()
@@ -50,9 +57,67 @@ async def add(request):
             status=401
             )
 
-@routes.put('/set')
+@routes.post('/set')
 async def set(request):
-    pass
+    """
+    Sets active wifi credentials. Requires reboot to activate.
+    """
+    body = await request.json()
+    ssid = body.get('ssid')
+    wifi_network_old = WifiNetworks.objects(active=True).first()
+    wifi_network_new = WifiNetworks.objects(ssid=ssid).first()
+
+    if wifi_network_new:
+        networking.set_wifi(wifi_network_new.ssid, wifi_network_new.password)
+        wifi_network_new.active = True
+        wifi_network_new.save()
+        if wifi_network_old:
+            wifi_network_old.active = False
+            wifi_network_old.save()
+        return web.json_response(
+                {
+                 'success': True,
+                 'message': f'WiFi network "{ssid}" now set. Reboot to connect.'
+                },
+                status=200
+                )
+    else:
+        return web.json_response(
+                {'success': False, 'errors': [f'Unkown WiFi network: {ssid}']},
+                status=400
+                )
+
+@routes.post('/switch')
+async def switch_mode(request):
+    """
+    Switches AP mode.
+    """
+    body = await request.json()
+    active = body.get('active')
+    networking.switch_AP_mode(active)
+    state = 'enabled' if active else 'disabled'
+    return web.json_response(
+            {
+             'success': True,
+             'message': f'AP mode {state}. Reboot now.'
+            },
+            status=200
+            )
+
+@routes.get('/reboot')
+async def reboot(request):
+    """
+    Reboots device.
+    """
+    t = Timer(3, networking.reboot)
+    t.start()
+    return web.json_response(
+            {
+             'success': True,
+             'message': 'System will now reboot.'
+            },
+            status=200
+            )
 
 prov = web.Application()
 prov.add_routes(routes)

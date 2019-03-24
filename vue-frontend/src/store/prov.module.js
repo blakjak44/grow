@@ -1,5 +1,5 @@
 import ApiService from "../common/api.service";
-import { ADD_WIFI, SET_WIFI } from "./actions.type";
+import { ADD_WIFI, SET_WIFI, SWITCH_AP, REBOOT } from "./actions.type";
 import { SET_PROV } from "./mutations.type";
 
 const state = {
@@ -28,9 +28,21 @@ const actions = {
         });
     });
   },
-  [SET_WIFI]() {
+  [SET_WIFI](context, ssid) {
     return new Promise(( resolve, reject ) => {
-      ApiService.post("prov/set")
+      ApiService.post("prov/set", ssid)
+        .then(({ data })  => {
+          resolve(data);
+        })
+        .catch(({ response }) => {
+          debugger
+          reject(response);
+        });
+    });
+  },
+  [SWITCH_AP](context, active) {
+    return new Promise(( resolve, reject ) => {
+      ApiService.post("prov/switch", { active })
         .then(({ data })  => {
           resolve(data);
         })
@@ -39,6 +51,17 @@ const actions = {
         });
     });
   },
+  [REBOOT]() {
+    return new Promise(( resolve, reject ) => {
+      ApiService.get("prov/reboot")
+        .then(({ data }) => {
+          resolve(data);
+        })
+        .catch(({ response }) => {
+          reject(response);
+        })
+    });
+  }
 }
 
 const mutations = {

@@ -5,3 +5,5 @@ export const REGISTER = "register";
 export const UPDATE_USER = 'updateUser';
 export const ADD_WIFI = 'addWiFi';
 export const SET_WIFI = 'setWiFi';
+export const SWITCH_AP = 'switchAP';
+export const REBOOT = 'reboot';

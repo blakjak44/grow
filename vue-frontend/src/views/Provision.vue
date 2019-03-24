@@ -43,7 +43,7 @@
 <script>
 import UIkit from 'uikit';
 
-import { ADD_WIFI, SET_WIFI, REBOOT } from "../store/actions.type";
+import { ADD_WIFI, SET_WIFI, SWITCH_AP, REBOOT } from "../store/actions.type";
 
 export default {
   name: "provision",
@@ -59,15 +59,29 @@ export default {
       let password = this.password;
       this.$store.dispatch(ADD_WIFI, { ssid, password })
         .then( data => {
-          UIkit.notification(data.message, { status:'success' })
-          this.$store.dispatch(SET_WIFI).then( data => {
-            UIkit.notification(data.message, { status:'success' });
-            UIkit.notification(
-              'Device will now reboot. Please connect to the new WiFi network.',
-              { status:'success' }
-            );
-            this.$store.dispatch(REBOOT)
-          })
+          UIkit.notification(data.message, { status: 'success' })
+          this.$store.dispatch(SET_WIFI, { ssid })
+            .then( data => {
+              UIkit.notification(data.message, { status: 'success' });
+              UIkit.notification(
+                'Device will now reboot. Please connect to the new WiFi network.',
+                { status:'success' }
+              );
+              this.$store.dispatch(SWITCH_AP, { active: false })
+                .then( data => {
+                  UIkit.notification(data.message, { status: 'success' })
+                  this.$store.dispatch(REBOOT)
+                    .then( data => {
+                      UIkit.notification(data.message, { status: 'success' })
+                    })
+                })
+            })
+            .catch( response => {
+              debugger
+              response.data.errors.forEach( error => {
+                UIkit.notification(error, { status:'danger' })
+              })
+            })
         })
         .catch( response => {
           response.data.errors.forEach( error => {

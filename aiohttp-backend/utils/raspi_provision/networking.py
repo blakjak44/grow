@@ -21,6 +21,7 @@ def set_wifi(ssid, passwd):
              template[-3] = template[-3].replace('SSID', ssid)
              template[-2] = template[-2].replace('PASSWORD', passwd)
              o.writelines(template)
+    return f'Successfully set active WiFi network: {ssid}'.
 
 def get_current_wifi():
     with open('/etc/wpa_supplicant/wpa_supplicant.conf') as f:
@@ -42,6 +43,7 @@ def get_current_ip(interface='wlan0'):
         raise ValueError(f'No valid ip address assigned to interface: {interface}.')
 
 def switch_AP_mode(active=True):
+    state = 'enabled' if active else 'disabled'
     if active:
         result = subprocess.check_output(['cp', f'{RASPI_PROV_PATH}/config_files/dhcpcd.conf.enable', '/etc/dhcpcd.conf'])
         result = subprocess.check_output(['/bin/systemctl', 'enable', 'hostapd'])
@@ -50,6 +52,7 @@ def switch_AP_mode(active=True):
         result = subprocess.check_output(['cp', f'{RASPI_PROV_PATH}/config_files/dhcpcd.conf.disable', '/etc/dhcpcd.conf'])
         result = subprocess.check_output(['/bin/systemctl', 'stop', 'hostapd'])
         result = subprocess.check_output(['/bin/systemctl', 'disable', 'hostapd'])
+    return f'Successfully {state} AP.'
 
 def reboot():
     subprocess.check_output(['reboot'])

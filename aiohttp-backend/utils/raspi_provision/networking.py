@@ -1,3 +1,5 @@
+import asyncio
+
 import re
 
 import subprocess
@@ -21,7 +23,7 @@ def set_wifi(ssid, passwd):
              template[-3] = template[-3].replace('SSID', ssid)
              template[-2] = template[-2].replace('PASSWORD', passwd)
              o.writelines(template)
-    return f'Successfully set active WiFi network: {ssid}'.
+    return True
 
 def get_current_wifi():
     with open('/etc/wpa_supplicant/wpa_supplicant.conf') as f:
@@ -42,17 +44,26 @@ def get_current_ip(interface='wlan0'):
     else:
         raise ValueError(f'No valid ip address assigned to interface: {interface}.')
 
-def switch_AP_mode(active=True):
+async def switch_AP_mode(active=True):
     state = 'enabled' if active else 'disabled'
+    processes = []
     if active:
-        result = subprocess.check_output(['cp', f'{RASPI_PROV_PATH}/config_files/dhcpcd.conf.enable', '/etc/dhcpcd.conf'])
-        result = subprocess.check_output(['/bin/systemctl', 'enable', 'hostapd'])
-        result = subprocess.check_output(['/bin/systemctl', 'start', 'hostapd'])
+        processes.append(asyncio.create_subprocess_exec(*['cp', f'{RASPI_PROV_PATH}/config_files/dhcpcd.conf.enable', '/etc/dhcpcd.conf']))
+        processes.append(asyncio.create_subprocess_exec(*['/bin/systemctl', 'enable', 'hostapd']))
+        processes.append(asyncio.create_subprocess_exec(*['/bin/systemctl', 'start', 'hostapd']))
+        #result = subprocess.check_output(['cp', f'{RASPI_PROV_PATH}/config_files/dhcpcd.conf.enable', '/etc/dhcpcd.conf'])
+        #result = subprocess.check_output(['/bin/systemctl', 'enable', 'hostapd'])
+        #result = subprocess.check_output(['/bin/systemctl', 'start', 'hostapd'])
     else:
-        result = subprocess.check_output(['cp', f'{RASPI_PROV_PATH}/config_files/dhcpcd.conf.disable', '/etc/dhcpcd.conf'])
-        result = subprocess.check_output(['/bin/systemctl', 'stop', 'hostapd'])
-        result = subprocess.check_output(['/bin/systemctl', 'disable', 'hostapd'])
-    return f'Successfully {state} AP.'
+        processes.append(asyncio.create_subprocess_exec(*['cp', f'{RASPI_PROV_PATH}/config_files/dhcpcd.conf.disable', '/etc/dhcpcd.conf']))
+        processes.append(asyncio.create_subprocess_exec(*['/bin/systemctl', 'start', 'hostapd']))
+        processes.append(asyncio.create_subprocess_exec(*['/bin/systemctl', 'disable', 'hostapd']))
+        #result = subprocess.check_output(['cp', f'{RASPI_PROV_PATH}/config_files/dhcpcd.conf.disable', '/etc/dhcpcd.conf'])
+        #result = subprocess.check_output(['/bin/systemctl', 'stop', 'hostapd'])
+        #result = subprocess.check_output(['/bin/systemctl', 'disable', 'hostapd'])
+    for proc in processes:
+        await proc
+    return True
 
 def reboot():
     subprocess.check_output(['reboot'])

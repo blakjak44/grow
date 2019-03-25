@@ -68,7 +68,7 @@ async def set(request):
     wifi_network_new = WifiNetworks.objects(ssid=ssid).first()
 
     if wifi_network_new:
-        networking.set_wifi(wifi_network_new.ssid, wifi_network_new.password)
+        success = networking.set_wifi(wifi_network_new.ssid, wifi_network_new.password)
         wifi_network_new.active = True
         wifi_network_new.save()
         if wifi_network_old:
@@ -94,7 +94,7 @@ async def switch_mode(request):
     """
     body = await request.json()
     active = body.get('active')
-    networking.switch_AP_mode(active)
+    success = await networking.switch_AP_mode(active)
     state = 'enabled' if active else 'disabled'
     return web.json_response(
             {

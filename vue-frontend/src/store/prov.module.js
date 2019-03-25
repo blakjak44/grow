@@ -42,7 +42,7 @@ const actions = {
   },
   [SWITCH_AP](context, active) {
     return new Promise(( resolve, reject ) => {
-      ApiService.post("prov/switch", { active })
+      ApiService.post("prov/switch", active)
         .then(({ data })  => {
           resolve(data);
         })

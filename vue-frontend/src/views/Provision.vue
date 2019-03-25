@@ -57,27 +57,22 @@ export default {
     onSubmit() {
       let ssid = this.ssid;
       let password = this.password;
-      this.$store.dispatch(ADD_WIFI, { ssid, password })
+      return this.$store.dispatch(ADD_WIFI, { ssid, password })
         .then( data => {
           UIkit.notification(data.message, { status: 'success' })
-          this.$store.dispatch(SET_WIFI, { ssid })
+          return this.$store.dispatch(SET_WIFI, { ssid })
             .then( data => {
               UIkit.notification(data.message, { status: 'success' });
-              UIkit.notification(
-                'Device will now reboot. Please connect to the new WiFi network.',
-                { status:'success' }
-              );
-              this.$store.dispatch(SWITCH_AP, { active: false })
+              return this.$store.dispatch(SWITCH_AP, { active: false })
                 .then( data => {
                   UIkit.notification(data.message, { status: 'success' })
-                  this.$store.dispatch(REBOOT)
+                  return this.$store.dispatch(REBOOT)
                     .then( data => {
                       UIkit.notification(data.message, { status: 'success' })
                     })
                 })
             })
             .catch( response => {
-              debugger
               response.data.errors.forEach( error => {
                 UIkit.notification(error, { status:'danger' })
               })
